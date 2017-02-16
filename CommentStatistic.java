@@ -36,24 +36,64 @@ public class CommentStatistic {
 		JavaPairRDD<String, String> timeScoreRDD = splitRDD.mapToPair(new createPair(0));// time: score
 		JavaPairRDD<String, AvgCount> timeScoreIteratorRDD = timeScoreRDD.filter( new filterEmptyScore()).combineByKey(createAcc, addAndCount, combine);
 		Map<String, AvgCount> countMap = timeScoreIteratorRDD.collectAsMap();
-		for(Entry<String, AvgCount> entry: countMap.entrySet()){
-			System.out.println(entry.getKey() + " 的当日平均分: " + entry.getValue().avg());
-		}	
+// 		for(Entry<String, AvgCount> entry: countMap.entrySet()){
+// 			System.out.println(entry.getKey() + " 的当日平均分: " + entry.getValue().avg());
+// 		}
+		//2016.2.16日
+		//把结果写入文件		
 
+		try{
+			File file = new File("/home/yingying/SparkStatisticData/dailyAveScore.txt");
+			if(!file.exists())
+				file.createNewFile();
+			FileWriter fw = new FileWriter(file, true);
+			BufferedWriter bw = new BufferedWriter(fw);
+		    for(Entry<String, AvgCount> entry: countMap.entrySet()){
+		    	bw.write(entry.getKey() + " today's average score is : " + String.valueOf(entry.getValue().avg()));
+		    	bw.write("\n");
+		    }			
+		    bw.close();
+		    System.out.println("dailyAvgScore has been written");
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 		}
 	  public static void avgCom (){
 		  //日评论量：时间：评论量
 		JavaPairRDD<String, String> timeCommentRDD = splitRDD.mapToPair(new createPair(2));// time: comment
 		JavaPairRDD<String, Iterable<String>> timeComIterator = timeCommentRDD.filter(new filterEmptyComment()).groupByKey();
 		Map<String, Iterable<String>> commMap = timeComIterator.collectAsMap();		
-		for(Entry<String, Iterable<String>> entry2: commMap.entrySet()){
-			int length =0;
-			Iterable<String> entryValue = entry2.getValue();
-			for(String comment : entryValue){
-				length += 1;
-			}
-			System.out.println(entry2.getKey() + "  的评论量: " + length);
-		}		  
+// 		for(Entry<String, Iterable<String>> entry2: commMap.entrySet()){
+// 			int length =0;
+// 			Iterable<String> entryValue = entry2.getValue();
+// 			for(String comment : entryValue){
+// 				length += 1;
+// 			}
+// 			System.out.println(entry2.getKey() + "  的评论量: " + length);
+// 		}		  
+		  //2016.2.11日		
+		  //把结果写入文件
+		 try{
+			File file = new File("/home/yingying/SparkStatisticData/dailyComNum.txt");
+			if(!file.exists())
+				file.createNewFile();
+			FileWriter fw = new FileWriter(file, true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			for(Entry<String, Iterable<String>> entry2: commMap.entrySet()){
+				int length =0;
+				Iterable<String> entryValue = entry2.getValue();
+				for(String comment : entryValue){
+					length += 1;
+				}
+				bw.write(entry2.getKey() + "  today's total number of comments is : " + String.valueOf(length));
+				bw.write("\n");
+			}		
+			bw.close();
+			 System.out.println("dailyComNum  has been written");
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		  
 	  }
 	  static class filterEmptyComment implements Function<Tuple2<String, String>, Boolean>{
 		  //清除掉空的comment
